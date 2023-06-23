@@ -1,4 +1,5 @@
 // COMPONENTS
+import { FaArrowCircleLeft, FaArrowCircleRight } from "react-icons/fa";
 import { HeroCard } from "../../components/HeroCard";
 import { SpinnerIcon } from "../../components/LoadingSpinner";
 import { SearchBar } from "../../components/SearchBar";
@@ -11,9 +12,23 @@ import { IHeroProps } from "../../types/hero";
 
 // STYLES
 import { HeroesGallery, WrapperHome } from "./styles";
+import { Pagination } from "../../components/Pagination";
+import { useEffect } from "react";
 
 export const Home = () => {
-  const { marvelHeroes, loading, isLimitExceeded } = useMarvelHeroes({});
+  const {
+    handleLoadCharacters,
+    marvelHeroes,
+    loading,
+    isLimitExceeded,
+    totalPages,
+    handleNextPage,
+    handlePreviousPage,
+  } = useMarvelHeroes({});
+
+  // useEffect(() => {
+  //   handleLoadCharacters();
+  // }, []);
 
   return (
     <WrapperHome>
@@ -28,7 +43,20 @@ export const Home = () => {
         {loading && <SpinnerIcon size={30} />}
 
         {isLimitExceeded && <p>{isLimitExceeded}</p>}
+
+        <button
+          onClick={() => {
+            handleLoadCharacters();
+          }}
+        >
+          aquii
+        </button>
       </HeroesGallery>
+      <Pagination
+        handleNext={handleNextPage}
+        handlePrev={handlePreviousPage}
+        totalPages={totalPages}
+      />
     </WrapperHome>
   );
 };
