@@ -1,6 +1,6 @@
 import { FaHome, FaStar } from "react-icons/fa";
 import { RedirectLink, WrapperHeader } from "./styles";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const Header = () => {
   const navigate = useNavigate();
@@ -12,7 +12,11 @@ export const Header = () => {
 
       <span>MARVEL</span>
 
-      <RedirectLink onClick={() => navigate("/favorites")}>
+      <RedirectLink
+        onClick={() => {
+          navigate("/favorites");
+        }}
+      >
         <FaStar />
       </RedirectLink>
     </WrapperHeader>

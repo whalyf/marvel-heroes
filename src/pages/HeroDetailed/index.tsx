@@ -19,7 +19,7 @@ export const HeroDetailed = () => {
 
   useEffect(() => {
     handleLoadHero(Number(params.id));
-  }, [handleLoadHero, params]);
+  }, []);
 
   return (
     <WrapperHeroDetailed>
