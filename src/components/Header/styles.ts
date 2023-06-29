@@ -11,6 +11,7 @@ export const WrapperHeader = styled.div`
     font-size: 3rem;
     color: #fff;
     font-weight: bold;
+    cursor: default;
   }
 `;
 

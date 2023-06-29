@@ -13,6 +13,7 @@ export const HeroesGallery = styled.div`
   gap: 30px;
   max-height: 800px;
   overflow-y: auto;
+  height: 100vh;
 
   ${scrollbarThin}
 
