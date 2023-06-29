@@ -1,15 +1,20 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import md5 from "md5";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { IHeroProps } from "../types/hero";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
+import { toast } from "react-toastify";
 
 import mock from "../mock/heroes.json";
+import { useNavigate } from "react-router-dom";
+import { round } from "lodash";
 
 export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
   const publicKey = process.env.REACT_APP_PUBLIC_MARVEL_KEY;
   const privateKey = process.env.REACT_APP_PRIVATE_MARVEL_KEY;
   const timestamp = Date.now();
   const hash = md5(`${timestamp}${privateKey}${publicKey}`);
+  const navigate = useNavigate();
 
   const apiUrl = "https://gateway.marvel.com/v1/public/characters";
   // const params = `?ts=${timestamp}&apikey=${publicKey}&hash=${hash}`;
@@ -19,8 +24,9 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
   const [marvelHeroes, setMarvelHeroes] = useState<IHeroProps[]>([]);
   const [hero, setHero] = useState<IHeroProps>();
   const [favoriteHero, setFavoriteHero] = useState<boolean>(false);
-
   const [allFavorites, setAllFavorites] = useState<IHeroProps[]>([]);
+
+  const [search, setSearch] = useState<string>("");
 
   // Pagination Control
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -33,7 +39,6 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
 
   const handleLoadCharacters = useCallback(async () => {
     setLoading(true);
-
     try {
       const response = await axios.get(apiUrl + params);
       const data = response.data;
@@ -41,7 +46,7 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
       // Handle the API response data
       if (data.code === 200) {
         setMarvelHeroes(data?.data?.results);
-        setTotalPages(data?.data?.total);
+        setTotalPages(round(data?.data?.total / data.data.limit));
       }
 
       if (data.code === "RequestThrottled") {
@@ -51,14 +56,44 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
       setLoading(false);
     } catch (error) {
       // Handle error
-      console.log(error);
+      if (
+        isAxiosError(error) &&
+        error?.response?.data.code === "RequestThrottled"
+      ) {
+        setIsLimitExceeded(error?.response?.data.message);
+      }
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    // handleLoadCharacters();
-    setMarvelHeroes(mock?.data?.data?.results);
+  const handleSearchHero = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(apiUrl + params + `&name=${search}`);
+      const data = response.data;
+
+      // Handle the API response data
+      if (data?.data?.total > 0) {
+        navigate(`/hero/${data?.data?.results[0].id}`);
+      } else {
+        setMarvelHeroes([]);
+      }
+
+      if (data.code === "RequestThrottled") {
+        setIsLimitExceeded(data?.message);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      // Handle error
+      if (
+        isAxiosError(error) &&
+        error?.response?.data.code === "RequestThrottled"
+      ) {
+        setIsLimitExceeded(error?.response?.data.message);
+      }
+      setLoading(false);
+    }
   }, []);
 
   const isFavorite = useCallback((id: IHeroProps["id"]): boolean => {
@@ -88,30 +123,16 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
       }
     } catch (error) {
       // Handle error
-      console.log(error);
+      if (
+        isAxiosError(error) &&
+        error?.response?.data.code === "RequestThrottled"
+      ) {
+        setIsLimitExceeded(error?.response?.data.message);
+      }
       setLoading(false);
     }
   }, []);
 
-  const handleFavoriteHero = useCallback(async (id: IHeroProps["id"]) => {
-    const favoriteHeroes = localStorage.getItem("@favorite-heroes");
-
-    if (favoriteHeroes === null || favoriteHeroes.length === 0) {
-      localStorage.setItem("@favorite-heroes", await JSON.stringify([id]));
-    } else {
-      const parsedFavorites = await JSON.parse(favoriteHeroes);
-      const existingIndex = await parsedFavorites.indexOf(id);
-
-      if (existingIndex !== -1) {
-        await parsedFavorites.splice(existingIndex, 1);
-      } else {
-        await parsedFavorites.push(id);
-      }
-
-      localStorage.setItem("@favorite-heroes", JSON.stringify(parsedFavorites));
-    }
-    setFavoriteHero(isFavorite(id));
-  }, []);
   const handleLoadFavorites = useCallback(() => {
     const allFavoriteHeroesIds = localStorage.getItem("@favorite-heroes");
 
@@ -136,7 +157,12 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
                 }
               } catch (error) {
                 // Handle error
-                console.log(error);
+                if (
+                  isAxiosError(error) &&
+                  error?.response?.data.code === "RequestThrottled"
+                ) {
+                  setIsLimitExceeded(error?.response?.data.message);
+                }
               }
             }
           );
@@ -144,7 +170,7 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
           await Promise.all(fetchPromises);
         } catch (error) {
           // Handle error
-          console.log(error);
+
           setLoading(false);
         }
       };
@@ -152,6 +178,26 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
       fetchHeros();
       setLoading(false);
     }
+  }, []);
+
+  const handleFavoriteHero = useCallback(async (id: IHeroProps["id"]) => {
+    const favoriteHeroes = localStorage.getItem("@favorite-heroes");
+
+    if (favoriteHeroes === null || favoriteHeroes.length === 0) {
+      localStorage.setItem("@favorite-heroes", await JSON.stringify([id]));
+    } else {
+      const parsedFavorites = await JSON.parse(favoriteHeroes);
+      const existingIndex = await parsedFavorites.indexOf(id);
+
+      if (existingIndex !== -1) {
+        await parsedFavorites.splice(existingIndex, 1);
+      } else {
+        await parsedFavorites.push(id);
+      }
+
+      localStorage.setItem("@favorite-heroes", JSON.stringify(parsedFavorites));
+    }
+    setFavoriteHero(isFavorite(id));
   }, []);
 
   const handleNextPage = () => {
@@ -175,6 +221,8 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
     handleFavoriteHero,
     handleLoadFavorites,
     allFavorites,
+    handleSearchHero,
+    setSearch,
 
     //Pagination
     totalPages,

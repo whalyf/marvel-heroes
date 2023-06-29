@@ -26,9 +26,9 @@ export const Home = () => {
     handlePreviousPage,
   } = useMarvelHeroes({});
 
-  // useEffect(() => {
-  //   handleLoadCharacters();
-  // }, []);
+  useEffect(() => {
+    handleLoadCharacters();
+  }, []);
 
   return (
     <WrapperHome>
@@ -42,21 +42,15 @@ export const Home = () => {
 
         {loading && <SpinnerIcon size={30} />}
 
-        {isLimitExceeded && <p>{isLimitExceeded}</p>}
-
-        <button
-          onClick={() => {
-            handleLoadCharacters();
-          }}
-        >
-          aquii
-        </button>
+        {isLimitExceeded && !loading && <p>{isLimitExceeded}</p>}
       </HeroesGallery>
-      <Pagination
-        handleNext={handleNextPage}
-        handlePrev={handlePreviousPage}
-        totalPages={totalPages}
-      />
+      {!isLimitExceeded && (
+        <Pagination
+          handleNext={handleNextPage}
+          handlePrev={handlePreviousPage}
+          totalPages={totalPages}
+        />
+      )}
     </WrapperHome>
   );
 };

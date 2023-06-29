@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useMarvelHeroes } from "../../hooks/useMarvel";
 import { IHeroProps } from "../../types/hero";
 import { WrapperHeroCard } from "./styles";
 
