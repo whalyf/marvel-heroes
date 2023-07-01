@@ -1,12 +1,27 @@
 import { useParams } from "react-router-dom";
-import { WrapperHeroDetailed, HeroImage } from "./styles";
-import { useMarvelHeroes } from "../../hooks/useMarvel";
-import { useEffect } from "react";
-import { SpinnerIcon } from "../../components/LoadingSpinner";
+import { useEffect, useState } from "react";
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
+
+// HOOKS
+import { useMarvelHeroes } from "../../hooks/useMarvel";
+// COMPONENTS
+import { SpinnerIcon } from "../../components/LoadingSpinner";
+import { HeroBadge } from "../../components/HeroBadge";
+
+// STYLES
+import {
+  WrapperHeroDetailed,
+  HeroImage,
+  Badges,
+  ComicsBadges,
+  SeriesBadges,
+} from "./styles";
 
 export const HeroDetailed = () => {
   const params = useParams();
+
+  const [seeAllComics, setSeeAllComics] = useState(false);
+  const [seeAllSeries, setSeeAllSeries] = useState(false);
 
   const {
     handleLoadHero,
@@ -40,21 +55,51 @@ export const HeroDetailed = () => {
           />
           <span>{hero.name}</span>
 
-          <p>{hero.description}</p>
+          {hero.description.length > 0 && <p>{hero.description}</p>}
+
+          <Badges>
+            <ComicsBadges>
+              {!seeAllComics &&
+                hero.comics?.items &&
+                hero.comics?.items
+                  .slice(0, 5)
+                  .map((item) => <HeroBadge type="comics" text={item.name} />)}
+
+              {seeAllComics &&
+                hero.comics?.items &&
+                hero.comics?.items.map((item) => (
+                  <HeroBadge type="comics" text={item.name} />
+                ))}
+
+              {hero.comics?.items.length !== 0 && (
+                <button onClick={() => setSeeAllComics(!seeAllComics)}>
+                  {seeAllComics ? "- comics" : "+ comics"}
+                </button>
+              )}
+            </ComicsBadges>
+
+            <SeriesBadges>
+              {!seeAllSeries &&
+                hero.series?.items &&
+                hero.series?.items
+                  .slice(0, 5)
+                  .map((item) => <HeroBadge type="series" text={item.name} />)}
+
+              {seeAllSeries &&
+                hero.series?.items &&
+                hero.series?.items.map((item) => (
+                  <HeroBadge type="series" text={item.name} />
+                ))}
+
+              {hero.series?.items.length !== 0 && (
+                <button onClick={() => setSeeAllSeries(!seeAllSeries)}>
+                  {seeAllSeries ? "- series" : "+ series"}
+                </button>
+              )}
+            </SeriesBadges>
+          </Badges>
         </>
       )}
-      {/* 
-      <HeroImage
-        src="https://media.licdn.com/dms/image/D4D03AQFPKwkC6ojhAw/profile-displayphoto-shrink_800_800/0/1686326139034?e=1692835200&v=beta&t=wqQ-vm6INvwRTi6iTLPVoFQ0scaFZ9iNMkgay54IpRc"
-        alt={hero?.name}
-      />
-      <span>Whalyf</span>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti
-        officia reiciendis quibusdam inventore beatae! Repudiandae, quibusdam.
-        Hic porro, commodi doloribus recusandae incidunt vel quaerat unde minima
-        tenetur modi, temporibus aliquid?
-      </p> */}
 
       {loading && <SpinnerIcon size={30} />}
 

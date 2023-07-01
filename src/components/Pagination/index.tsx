@@ -4,18 +4,18 @@ import { WrapperPagination } from "./styles";
 export const Pagination = ({
   handleNext,
   handlePrev,
-  totalPages,
+  currentPage,
 }: {
   handleNext: () => void;
   handlePrev: () => void;
-  totalPages: number;
+  currentPage: number;
 }) => {
   return (
     <WrapperPagination>
       <button onClick={handlePrev}>
         <FaArrowCircleLeft size={25} />
       </button>
-      <span>{totalPages}</span>
+      <span>{currentPage + 1}</span>
       <button onClick={handleNext}>
         <FaArrowCircleRight size={25} />
       </button>

@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { scrollbarThin } from "../../components/atoms/scrollbars";
 
 export const WrapperFavorites = styled.div``;
 
@@ -11,7 +12,10 @@ export const HeroesGallery = styled.div`
   flex-wrap: wrap;
   gap: 30px;
   height: 100vh;
-  
+  max-height: 900px;
+  overflow-y: auto;
+  ${scrollbarThin}
+
   > p {
     text-align: justify;
     font-weight: 600;
