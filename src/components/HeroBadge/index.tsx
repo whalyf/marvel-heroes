@@ -1,9 +1,14 @@
-import { WrapperHeroBadge } from "./styles"
+import { WrapperHeroBadge } from "./styles";
 
-export const HeroBadge = () =>{
-  return (
-    <WrapperHeroBadge>
-      badge
-    </WrapperHeroBadge>
-  )
+interface IHeroBadgeProps {
+  type: "comics" | "series";
+  text: string;
 }
+
+export const HeroBadge = ({ type, text }: IHeroBadgeProps) => {
+  return (
+    <WrapperHeroBadge type={type}>
+      <span>{text}</span>
+    </WrapperHeroBadge>
+  );
+};

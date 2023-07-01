@@ -1,5 +1,4 @@
 // COMPONENTS
-import { FaArrowCircleLeft, FaArrowCircleRight } from "react-icons/fa";
 import { HeroCard } from "../../components/HeroCard";
 import { SpinnerIcon } from "../../components/LoadingSpinner";
 import { SearchBar } from "../../components/SearchBar";
@@ -21,14 +20,14 @@ export const Home = () => {
     marvelHeroes,
     loading,
     isLimitExceeded,
-    totalPages,
+    currentPage,
     handleNextPage,
     handlePreviousPage,
   } = useMarvelHeroes({});
 
   useEffect(() => {
     handleLoadCharacters();
-  }, []);
+  }, [currentPage]);
 
   return (
     <WrapperHome>
@@ -48,7 +47,7 @@ export const Home = () => {
         <Pagination
           handleNext={handleNextPage}
           handlePrev={handlePreviousPage}
-          totalPages={totalPages}
+          currentPage={currentPage}
         />
       )}
     </WrapperHome>

@@ -3,23 +3,19 @@ import md5 from "md5";
 import { useCallback, useState } from "react";
 import { IHeroProps } from "../types/hero";
 import axios, { isAxiosError } from "axios";
-import { toast } from "react-toastify";
 
-import mock from "../mock/heroes.json";
 import { useNavigate } from "react-router-dom";
-import { round } from "lodash";
 
 export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
   const publicKey = process.env.REACT_APP_PUBLIC_MARVEL_KEY;
   const privateKey = process.env.REACT_APP_PRIVATE_MARVEL_KEY;
   const timestamp = Date.now();
   const hash = md5(`${timestamp}${privateKey}${publicKey}`);
+  const PAGE_LIMIT = 20;
   const navigate = useNavigate();
 
   const apiUrl = "https://gateway.marvel.com/v1/public/characters";
-  // const params = `?ts=${timestamp}&apikey=${publicKey}&hash=${hash}`;
-  const params =
-    "?ts=1687482276638&apikey=cc9fccc74c61aacc44103a79b84efb2d&hash=eb2b91f6cbac6411e4e7cbd54ab15a97";
+  const params = `?ts=${timestamp}&apikey=${publicKey}&hash=${hash}`;
 
   const [marvelHeroes, setMarvelHeroes] = useState<IHeroProps[]>([]);
   const [hero, setHero] = useState<IHeroProps>();
@@ -29,7 +25,7 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
   const [search, setSearch] = useState<string>("");
 
   // Pagination Control
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(0);
 
   const [loading, setLoading] = useState(false);
@@ -40,13 +36,18 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
   const handleLoadCharacters = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(apiUrl + params);
+      const response = await axios.get(apiUrl + params, {
+        params: {
+          offset: currentPage,
+          limit: PAGE_LIMIT,
+        },
+      });
       const data = response.data;
-
+      console.log(data);
       // Handle the API response data
       if (data.code === 200) {
         setMarvelHeroes(data?.data?.results);
-        setTotalPages(round(data?.data?.total / data.data.limit));
+        setTotalPages(data.data.total);
       }
 
       if (data.code === "RequestThrottled") {
@@ -64,7 +65,7 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
       }
       setLoading(false);
     }
-  }, []);
+  }, [currentPage]);
 
   const handleSearchHero = useCallback(async () => {
     setLoading(true);
@@ -94,7 +95,7 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
       }
       setLoading(false);
     }
-  }, []);
+  }, [search]);
 
   const isFavorite = useCallback((id: IHeroProps["id"]): boolean => {
     const favoriteHeroes = localStorage.getItem("@favorite-heroes");
@@ -201,14 +202,14 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
   }, []);
 
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prevPage) => prevPage + 1);
+    if (currentPage + PAGE_LIMIT < totalPages) {
+      setCurrentPage(currentPage + PAGE_LIMIT);
     }
   };
 
   const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prevPage) => prevPage - 1);
+    if (currentPage >= PAGE_LIMIT) {
+      setCurrentPage(currentPage - PAGE_LIMIT);
     }
   };
 
@@ -225,7 +226,7 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
     setSearch,
 
     //Pagination
-    totalPages,
+    currentPage: currentPage / PAGE_LIMIT,
     handleNextPage,
     handlePreviousPage,
 
