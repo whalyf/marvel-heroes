@@ -4,14 +4,12 @@ import { FavoriteHero, HeroesGallery, WrapperFavorites } from "./styles";
 import { IHeroProps } from "../../types/hero";
 import { HeroCard } from "../../components/HeroCard";
 import { SpinnerIcon } from "../../components/LoadingSpinner";
-import { AiOutlineDelete } from "react-icons/ai";
 
 export const Favorites = () => {
   const {
     handleLoadFavorites,
     loading,
     isLimitExceeded,
-    handleFavoriteHero,
 
     allFavorites,
   } = useMarvelHeroes({});
