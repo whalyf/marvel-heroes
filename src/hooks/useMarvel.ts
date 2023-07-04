@@ -43,7 +43,6 @@ export const useMarvelHeroes = ({ heroId }: { heroId?: number }) => {
         },
       });
       const data = response.data;
-      console.log(data);
       // Handle the API response data
       if (data.code === 200) {
         setMarvelHeroes(data?.data?.results);
